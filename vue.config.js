@@ -8,5 +8,12 @@ module.exports = defineConfig({
     port: 8081, // 开发服务器端口
     https: false, // 是否启用 HTTPS
     open: true, // 是否在启动时打开浏览器
+    proxy: {
+      '/': {
+        target: 'http://localhost:9000',
+        ws: false, // 禁用 WebSocket 代理
+        changeOrigin: true
+      }
+    }
   },
 })

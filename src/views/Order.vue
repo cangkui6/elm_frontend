@@ -81,14 +81,15 @@
 				this.explain = this.address
 			};
 			console.log('11'+this.businessId)
-			this.$axios.post('CartController/listCart',this.$qs.stringify({
+						this.$axios.post('/cart/listCart',this.$qs.stringify({
 					userId:this.user.userId,businessId:this.businessId
 				})).then(response=>{
+					console.log("购物车响应:", response.data);
 					// 如果查询成功的话，把查到的数据保存在foodArray数组里,
-						this.foodArray = response.data;
-						console.log("12222")
-						console.log(this.businessId)
-						console.log(response.data);
+					if(response.data.code === 200) { // 修改为200
+						this.foodArray = response.data.data;
+						console.log("购物车数据:", this.foodArray);
+						console.log("商家ID:", this.businessId);
 						for(let i = 0;i < this.foodArray.length;i++){
 							this.businessname = this.foodArray[i].business.businessName;
 							this.deliveryprice = this.foodArray[i].business.deliveryPrice;
@@ -104,6 +105,7 @@
 							// }
 							// console.log(this.foodArray)
 						}
+					}
 						
 				}).catch(error=>{
 					console.log(error)
@@ -128,11 +130,12 @@
 				}
 				if(this.address!=null){
 					// 调用后台的createOrders合成方法
-					this.$axios.post('OrderController/createOrders',this.$qs.stringify({
+					this.$axios.post('/order/createOrders',this.$qs.stringify({
 					userId:this.user.userId,businessId:this.businessId,daId:this.daId,orderTotal:this.ordertotal
 				})).then(response =>{
-					if(response.data!=0){
-						this.orderId = response.data;
+					console.log("创建订单响应:", response.data);
+					if(response.data.code === 200 && response.data.data != 0){
+						this.orderId = response.data.data;
 			// 如果请求成功,返回orderId订单编号
 			// 则表明 * 根据用户编号、商家编号、订单总金额、送货地址编号向订单表中添加一条记录，​ 并获取自动生成的订单编号，​
 			//  * 然后根据用户编号、商家编号从购物车表中查询所有数据，

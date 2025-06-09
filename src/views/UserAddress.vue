@@ -43,7 +43,7 @@ export default{
 	created() {
 		this.user = this.$getSessionStorage('user');
 		//  根据用户编号查询所属送货地址
-		 this.$axios.post('DeliveryaddressController/listDeliveryAddressByUserId',this.$qs.stringify({
+		 this.$axios.post('/deliveryAddress/listDeliveryAddressByUserId',this.$qs.stringify({
                 userId:this.user.userId
             })).then(response =>{
 				if(response.data!=null){
@@ -86,10 +86,10 @@ export default{
 			})
 		},
 		remove(index){
-			this.$axios.post('DeliveryaddressController/removeDeliveryAddress',this.$qs.stringify({
+			this.$axios.post('/deliveryAddress/removeDeliveryAddress',this.$qs.stringify({
                 daId:this.deliveryAddressArray[index].daId
             })).then(response =>{
-				if(response.data==1){
+				if(response.data.code === 1 && response.data.data == 1){
 					// 如果请求成功表明删除该条记录成功
 					
 					alert("删除该条信息成功！！！！！！");

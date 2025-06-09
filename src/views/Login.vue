@@ -73,22 +73,24 @@ export default {
 			
 			// 首先向后台发送用户名，调用根据用户编号查询用户表返回的行数方法
 			// 判断数据库有没有该用户
-			this.$axios.post('UserController/getUserById',this.$qs.stringify({
+			this.$axios.post('/user/getUserById',this.$qs.stringify({
             userId : this.user.userId
         	})).then(respone=>{
+                console.log("查询用户响应:", respone.data);
 				// 如果存在该用户的话，就调用根据用户编号与密码查询用户信息方法
 				// 判断该用户输入的密码是否正确
-				if(respone.data==1){
-					this.$axios.post('UserController/getUserByIdByPass',this.$qs.stringify({
+				if(respone.data.code === 200 && respone.data.data == 1){
+					this.$axios.post('/user/getUserByIdByPass',this.$qs.stringify({
 						userId : this.user.userId,password : this.user.password
 					})).then(respone=>{
 						// 如果正确的话就登陆成功，就返回之前点餐的页面
-						if(respone.data!=null){
+                        console.log("登录验证响应:", respone.data);
+						if(respone.data.code === 200 && respone.data.data != null){
 							history.go(-1)
-							this.user = respone.data;
+							this.user = respone.data.data;
 							// // 为了防止数据溢出，不将图片的信息存入
 							// this.user.userImg=''
-							this.$setSessionStorage('user',respone.data)
+							this.$setSessionStorage('user',respone.data.data)
 							
 							// 反之，则用户名或密码错误
 						}else{

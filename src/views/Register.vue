@@ -99,10 +99,10 @@ export default {
 		
 		 blur(){
 			if(this.user.userId.length==11){
-				this.$axios.post('UserController/getUserById',this.$qs.stringify({
+				this.$axios.post('/user/getUserById',this.$qs.stringify({
 				userId : this.user.userId
 				})).then(response=>{
-					if(response.data==1){
+					if(response.data.code === 1 && response.data.data == 1){
 						alert("该用户已存在，请前往登录")
 						this.$router.push({
 							path:'/login'
@@ -134,11 +134,11 @@ export default {
 			if(this.user.userId!=null&&this.user.password!=null&&this.repassword!=null&&this.user.userSex!=null){
 			this.disabled=true
 
-			this.$axios.post('UserController/saveUser',this.$qs.stringify({
+			this.$axios.post('/user/saveUser',this.$qs.stringify({
 				userId:this.user.userId,password:this.user.password,userName:this.user.userName,userSex:this.user.userSex
 			})).then(response=>{
 				console.log(response.data)
-				if(response.data==1){
+				if(response.data.code === 1 && response.data.data == 1){
 					alert("注册成功")
 					this.$router.go(-1)
 				}

@@ -65,7 +65,7 @@ export default {
     },
     created() {
         this.user = this.$getSessionStorage('user');
-		this.$axios.post('OrderController/getOrdersById',this.$qs.stringify({
+		this.$axios.post('/order/getOrdersById',this.$qs.stringify({
                 orderId:this.orderId
             })).then(response =>{
 				// console.log(response.data);

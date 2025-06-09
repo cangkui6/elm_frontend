@@ -77,7 +77,7 @@ export default{
 	methods: {
 		
 		updateDeliveryAddress() {
-			 this.$axios.post('DeliveryaddressController/updateDeliveryAddress',this.$qs.stringify({
+			 this.$axios.post('/deliveryAddress/updateDeliveryAddress',this.$qs.stringify({
                 daId:this.daId,contactName:this.contactName,contactSex:this.contactSex,contactTel:this.contactTel,
 				address:this.address,userId:this.user.userId
 

@@ -348,7 +348,7 @@
                 path:'/businessList',
                 // 参数
                 query:{
-                    orderTypeId:orderTypeId
+                    categoryId:orderTypeId
                 }
             });
         }

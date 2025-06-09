@@ -31,8 +31,8 @@ import Footer from '../components/Footer.vue'
 export default {
     data(){
         return {
-			// 获取到由index.vue传来的orderTypeId，，，this.$route.query用这种方式获取
-            orderTypeId:this.$route.query.orderTypeId,
+			// 获取到由index.vue传来的categoryId
+            orderTypeId:this.$route.query.categoryId,
             businessArray:[],
 			user:{},
 			cartArray:[],
@@ -42,14 +42,14 @@ export default {
 	// vue中初始化的方法，自动调用
     created() {
 		this.user = this.$getSessionStorage('user');
-        // 利用axios根据orderTypeId查询商家的信息
+        // 利用axios根据categoryId查询商家的信息
 
 		// this.$qs.stringify({
-            // orderTypeId:this.orderTypeId  序列化参数
-        this.$axios.post('BusinessController/listBusinessByOrderTypeId',this.$qs.stringify({
-            orderTypeId:this.orderTypeId
+            // categoryId:this.orderTypeId  序列化参数
+        this.$axios.post('/business/listBusinessByOrderTypeId',this.$qs.stringify({
+            categoryId:this.orderTypeId
         })).then(response=>{
-            this.businessArray = response.data;
+            this.businessArray = response.data.data;
             console.log(response.data);
 			for(let item of this.businessArray){
 				item.quantity = 0;
@@ -79,11 +79,11 @@ export default {
 		toquantity(){
 			// 商家列表的小红点
 		// 根据用户编号查询此用户所有购物车信息​ 根据用户编号和商家编号，查询此用户购物车中某个商家的所有购物车信息
-			this.$axios.post('CartController/listCart',this.$qs.stringify({
+			this.$axios.post('/cart/listCart',this.$qs.stringify({
 				userId:this.user.userId
 			})).then(response=>{
-				if(response.data!=null){
-					this.cartArray = response.data;
+				if(response.data.code === 1 && response.data.data != null){
+					this.cartArray = response.data.data;
 					// console.log(this.businessArray)
 					console.log(this.cartArray)
 					

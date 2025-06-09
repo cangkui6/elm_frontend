@@ -69,7 +69,7 @@ export default{
 	},
 	methods: {
 		saveDeliveryAddress() {
-			 this.$axios.post('DeliveryaddressController/saveDeliveryAddress',this.$qs.stringify({
+			 this.$axios.post('/deliveryAddress/saveDeliveryAddress',this.$qs.stringify({
                 contactName:this.contactName,contactSex:this.contactSex,contactTel:this.contactTel,
 				address:this.address,userId:this.user.userId
 

@@ -100,13 +100,14 @@
 			console.log(this.user);
 
             // 通过$axios向后台发送异步请求，获取商家信息
-            this.$axios.post('BusinessController/getBusinessById',this.$qs.stringify({
+            this.$axios.post('/business/getBusinessById',this.$qs.stringify({
                 businessId:this.businessId
             })).then(response =>{
-				if(response.data!=null){
+                console.log("商家信息响应:", response.data);
+				if(response.data.code === 200){  // 修改这里，SUCCESS的code是200
 					// 如果请求成功从后台获取到数据
-                this.business = response.data;
-                console.log(response.data)
+                this.business = response.data.data;
+                console.log("商家数据:", this.business)
 				}else{
 					console.log("获取商家信息失败！！！！！！")
 				}
@@ -117,12 +118,14 @@
 
 
             // 通过$axios向后台发送异步请求,获取食品信息
-            this.$axios.post('FoodController/listFoodByBusinessId',this.$qs.stringify({
+            this.$axios.post('/food/listFoodByBusinessId',this.$qs.stringify({
                 businessId:this.businessId
             })).then(response =>{
-				if(response.data!=null){
+                console.log("食品信息响应:", response.data);
+				if(response.data.code === 200){  // 修改这里，SUCCESS的code是200
 					// 如果请求成功从后台获取到数据
-                this.foodArray = response.data;
+                this.foodArray = response.data.data;
+                console.log("食品数据:", this.foodArray);
                 for(let i = 0;i < this.foodArray.length;i++){
 					this.foodArray[i].quantity = 0;
 				}
@@ -161,12 +164,14 @@
 				// 该方法应该在页面初始化的时候被调用，即在created里面调用，
 				// 注意！！！！！！！！！！！不能在created里单独写，会出现刷新有时候有数据有时候没有的情况
 				// ！！！！！！！！！要写在查询后台食物列表成功之后，不会出现该问题
-				this.$axios.post('CartController/listCart',this.$qs.stringify({
+				this.$axios.post('/cart/listCart',this.$qs.stringify({
 					userId:this.user.userId,businessId:this.businessId
 				})).then(response=>{
 					// 如果查询成功的话，把查到的数据保存在cart数组里,
-						let cartArray = response.data;
-						console.log(response.data)
+					console.log("购物车响应:", response.data);
+					if(response.data.code === 200) {
+						let cartArray = response.data.data;
+						console.log("购物车数据:", cartArray)
 						// console.log('222222222222'+cartArray);
 						// console.log('1111111111111111'+this.foodArray);
 						// 遍历foodArray数组，找到前台后台对应的foodId，然后把后台查到的数量数据与前台对应上
@@ -187,7 +192,7 @@
 					
 						// 刷新列表
 						this.foodArray.sort();
-						
+					}
 
 				}).catch(error=>{
 					console.log(error)
@@ -248,12 +253,12 @@
             
 			// 向购物车表中添加一条记录
 			saveCart(index) {
-			this.$axios.post('CartController/saveCart',this.$qs.stringify({
+			this.$axios.post('/cart/saveCart',this.$qs.stringify({
 			userId:this.user.userId,businessId:this.foodArray[index].businessId,foodId:this.foodArray[index].foodId
 			})).then(response=>{
-				
+				console.log("添加购物车响应:", response.data);
 				// 如果添加成功的话，就将前台的数量设置为1.与后台cart表中数据对应
-				if(response.data==1){
+				if(response.data.code === 200){  // 修改为200
 					this.foodArray[index].quantity = 1;
 					// 注意，数量更新后要在页面刷新，才能显示
 					this.foodArray.sort()
@@ -267,11 +272,12 @@
 
 			// 根据用户编号、商家编号、食品编号更新数量
 			updateCart(index) {
-				this.$axios.post('CartController/updateCart',this.$qs.stringify({
+				this.$axios.post('/cart/updateCart',this.$qs.stringify({
 					userId:this.user.userId,businessId:this.foodArray[index].businessId,foodId:this.foodArray[index].foodId,quantity:this.foodArray[index].quantity
 				})).then(response=>{
+					console.log("更新购物车响应:", response.data);
 					// 如果后台数据库中数量更新成功，就需要把前台的数据更新为后台的数量，
-					if(response.data==1){
+					if(response.data.code === 200){ // 修改为200
 						// 注意，数量更新后要在页面刷新，才能显示
 						this.foodArray.sort()
 					}else{
@@ -283,11 +289,12 @@
 			},
 			// 据用户编号、商家编号、食品编号删除购物车表中的一条食品记录​ 根据用户编号、商家编号删除购物车表中的多条条记录
 			removeCart(index) {
-				this.$axios.post('CartController/removeCart',this.$qs.stringify({
+				this.$axios.post('/cart/removeCart',this.$qs.stringify({
 					userId:this.user.userId,businessId:this.foodArray[index].businessId,foodId:this.foodArray[index].foodId
 				})).then(response=>{
+					console.log("删除购物车响应:", response.data);
 					// 如果删除该条记录成功的话，就需要将前台的数据清除为0，并且减号按钮和数量要消失不见
-					if(response.data==1){
+					if(response.data.code === 200){ // 修改为200
 						this.foodArray[index].quantity=0;
 						// 刷新列表
 						this.foodArray.sort()

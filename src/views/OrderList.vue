@@ -83,7 +83,7 @@ export default {
         this.user = this.$getSessionStorage('user');
 		console.log(this.user);
 
-        this.$axios.post('OrderController/listOrdersByUserId',this.$qs.stringify({
+        this.$axios.post('/order/listOrdersByUserId',this.$qs.stringify({
             userId:this.user.userId
         })).then(response=>{
             if(response.data!=null){
