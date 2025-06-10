@@ -9,26 +9,26 @@
 			<!-- 订单列表部分 -->
 			<h3>未支付订单信息：</h3>
 			<ul class="order">
-				<li v-for="(item,index) in this.OrdersArray" v-if="item.orderState==0">
+				<li v-for="(item,index) in OrdersArray" :key="'unpaid-'+index" v-if="item && item.orderState === 0">
 					<div class="order-info">
 						<p>
-							{{item.business.businessName}}
+							{{item.business?.businessName}}
 							<i class="fa fa-caret-down" @click="viewif(item)"></i>
 						</p>
 						<div class="order-info-right">
-							<p>&#165;{{item.orderTotal+item.business.deliveryPrice}}</p>
+							<p>&#165;{{item.orderTotal + (item.business?.deliveryPrice || 0)}}</p>
 							<div class="order-info-right-icon" @click="topayment(index)">去支付</div>
 						</div>
 					</div>
 					<ul class="order-detailet" v-show="item.view">
-						<li v-for="item1 in item.list">
-							<p>{{item1.food.foodName}} x {{item1.quantity}}</p>
-							<p>&#165;{{item1.food.foodPrice}}</p>
+						<li v-for="(item1, idx) in item.list" :key="idx">
+							<p>{{item1.food?.foodName}} x {{item1.quantity}}</p>
+							<p>&#165;{{item1.food?.foodPrice}}</p>
 						</li>
 						
 						<li>
 							<p>配送费</p>
-							<p>&#165;{{item.business.deliveryPrice}}</p>
+							<p>&#165;{{item.business?.deliveryPrice}}</p>
 						</li>
 					</ul>
 				</li>
@@ -37,24 +37,24 @@
 			
 			<h3>已支付订单信息：</h3>
 			<ul class="order">
-				<li v-for="item in this.OrdersArray" v-if="item.orderState==1">
+				<li v-for="(item, index) in OrdersArray" :key="'paid-'+index" v-if="item && item.orderState === 1">
 					<div class="order-info">
 						<p>
-							{{item.business.businessName}}
+							{{item.business?.businessName}}
 							<i class="fa fa-caret-down" @click="viewif(item)"></i>
 						</p>
 						<div class="order-info-right">
-							<p>&#165;{{item.orderTotal+item.business.deliveryPrice}}</p>
+							<p>&#165;{{item.orderTotal + (item.business?.deliveryPrice || 0)}}</p>
 						</div>
 					</div>
 					<ul class="order-detailet" v-show="item.view">
-						<li v-for="item1 in item.list" >
-							<p>{{item1.food.foodName}} x {{item1.quantity}}</p>
-							<p>&#165;{{item1.food.foodPrice}}</p>
+						<li v-for="(item1, idx) in item.list" :key="idx">
+							<p>{{item1.food?.foodName}} x {{item1.quantity}}</p>
+							<p>&#165;{{item1.food?.foodPrice}}</p>
 						</li>
 						<li>
 							<p>配送费</p>
-							<p>&#165;{{item.business.deliveryPrice}}</p>
+							<p>&#165;{{item.business?.deliveryPrice}}</p>
 						</li>
 					</ul>
 				</li>
@@ -74,54 +74,52 @@ export default {
         return {
             OrdersArray:[],
             user:{},
-			
-			
-            
         }
     },
     created() {
         this.user = this.$getSessionStorage('user');
 		console.log(this.user);
 
-        this.$axios.post('/order/listOrdersByUserId',this.$qs.stringify({
-            userId:this.user.userId
-        })).then(response=>{
-            if(response.data!=null){
-                this.OrdersArray = response.data;
-
-                console.log(response.data);
-				for(let item of this.OrdersArray){
-					item.view = false;
-				}
-            }
-
-        }).catch(error=>{
-            console.log(error)
-        })
-		
-		
-
+        if (this.user && this.user.userId) {
+            this.$axios.post('/order/listOrdersByUserId',this.$qs.stringify({
+                userId:this.user.userId
+            })).then(response=>{
+                if(response.data!=null){
+                    this.OrdersArray = response.data || [];
+                    console.log(response.data);
+                    for(let item of this.OrdersArray){
+                        if (item) {
+                            item.view = false;
+                        }
+                    }
+                }
+            }).catch(error=>{
+                console.log(error)
+            });
+        } else {
+            console.error('User or userId is undefined');
+        }
     },
     methods: {
 		viewif(item) {
-			item.view = !item.view;
-			this.OrdersArray.sort()
+            if (item) {
+			    item.view = !item.view;
+            }
 		},
         topayment(index){
-			this.$router.push({
-				path:'/payment',
-				query:{
-					orderId:this.OrdersArray[index].orderId
-				}
-			})
+            if (this.OrdersArray && this.OrdersArray[index]) {
+                this.$router.push({
+                    path:'/payment',
+                    query:{
+                        orderId:this.OrdersArray[index].orderId
+                    }
+                });
+            }
 		}
-		
-	
     },
 	components:{
 		Footer
 	}
-
 }
 </script>
 <style scoped>
