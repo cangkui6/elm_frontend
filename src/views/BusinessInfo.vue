@@ -150,8 +150,11 @@
 			toOrder() {
 				if(this.user==null){
                     this.$router.push({
-                        path:'/login'
-                    })
+                        path:'/login',
+                        query: {
+                            redirect: this.$route.fullPath
+                        }
+                    });
                 }else{
 					this.$router.push({
                     	path:'/order',
@@ -201,8 +204,11 @@
                 // 首先验证用户是否登录，判断用户是否存在，如果不存在，跳转到用户登录界面
                 if(this.user==null){
                     this.$router.push({
-                        path:'/login'
-                    })
+                        path:'/login',
+                        query: {
+                            redirect: this.$route.fullPath
+                        }
+                    });
                 }else{
 					// 防止数量为0时点击减号
 					if(this.foodArray[index].quantity <= 0) {
@@ -224,9 +230,13 @@
 				// 加号按钮
                 // 首先验证用户是否登录，如果没登陆，就跳转到用户登录界面
                 if(this.user==null){
+                    // 跳转到登录页面，但保存当前页面作为重定向目标
                     this.$router.push({
-                        path:'/login'
-                     })
+                        path:'/login',
+                        query: {
+                            redirect: this.$route.fullPath
+                        }
+                    });
                 }else{
 					// 登录了就留在该页面
 					// 判断foodArray数组中food对象的quantity是否为0，(因为在刚显示该页面的时候，将前台的数量设置为0)

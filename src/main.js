@@ -53,13 +53,12 @@ router.beforeEach((to, from, next) => {
 		)
 	) {
 		if (user == null) {
-			// 跳转到登录页面
-			router.push('/login').catch((err) => {
-				if (err.name !== 'NavigationDuplicated') {
-					console.error(err);
-				}
+			// 保存原始要去的路径，以便登录后跳回
+			next({
+				path: '/login',
+				query: { redirect: to.fullPath }
 			});
-			location.reload();
+			return;
 		}
 	}
 	next();

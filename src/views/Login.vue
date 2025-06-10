@@ -88,8 +88,12 @@ export default {
 							// 保存用户信息到会话存储
 							this.$setSessionStorage('user', respone.data.data);
 							
-							// 判断是否从注册页面来，如果是则跳转到首页，否则返回上一页
-							if (this.$route.query.from === 'register') {
+							// 判断是否有重定向路径
+							const redirectPath = this.$route.query.redirect;
+							if (redirectPath) {
+								// 有重定向路径，跳回原来要访问的页面
+								this.$router.push(redirectPath);
+							} else if (this.$route.query.from === 'register') {
 								// 从注册页面来的，直接跳转到首页
 								this.$router.push('/index');
 							} else {
