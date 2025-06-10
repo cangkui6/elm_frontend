@@ -54,6 +54,8 @@
 </template>
 
 <script>
+import Footer from '../components/Footer.vue'
+
 export default{
 	data() {
 		return {
@@ -90,6 +92,9 @@ export default{
 			});
 		}
 	},
+	components: {
+		Footer
+	}
 }
 </script>
 

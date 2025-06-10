@@ -3,7 +3,7 @@
 
 		<!-- header部分 -->
 		<header>
-			<p>新增送货地址</p>
+			<p>编辑送货地址</p>
 		</header>
 
 		<!-- 表单部分 -->
@@ -54,6 +54,8 @@
 </template>
 
 <script>
+import Footer from '../components/Footer.vue'
+
 export default{
 	data() {
 		return {
@@ -103,6 +105,9 @@ export default{
 			});
 		}
 	},
+	components: {
+		Footer
+	}
 }
 </script>
 

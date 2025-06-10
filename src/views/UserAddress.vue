@@ -15,8 +15,8 @@
 					<p>{{item.address}}</p>
 				</div>
 				<div class="addresslist-right">
-					<i class="fa fa-edit" @click="edit(index)"></i>
-					<i class="fa fa-remove" @click="remove(index)"></i>
+					<i class="fa fa-edit" @click.stop="edit(index)"></i>
+					<i class="fa fa-remove" @click.stop="remove(index)"></i>
 				</div>
 			</li>
 		</ul>
@@ -69,18 +69,21 @@ export default{
 	},
 	methods: {
 		edit(index){
-			this.$router.push({
-				
-				path:'/edituseraddress',
-				query:{
-					daId:this.deliveryAddressArray[index].daId,
-					contactSex:this.deliveryAddressArray[index].contactSex,
-					contactName:this.deliveryAddressArray[index].contactName,
-					contactTel:this.deliveryAddressArray[index].contactTel,
-					address:this.deliveryAddressArray[index].address,
-					
-				}
-			})
+			console.log("编辑按钮被点击, index:", index);
+			try {
+				this.$router.push({
+					path:'/edituseraddress',
+					query:{
+						daId:this.deliveryAddressArray[index].daId,
+						contactSex:this.deliveryAddressArray[index].contactSex,
+						contactName:this.deliveryAddressArray[index].contactName,
+						contactTel:this.deliveryAddressArray[index].contactTel,
+						address:this.deliveryAddressArray[index].address,
+					}
+				});
+			} catch (error) {
+				console.error("路由跳转错误:", error);
+			}
 		},
 		remove(index) {
 			this.$axios.delete('/deliveryAddress/removeDeliveryAddress', {
