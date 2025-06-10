@@ -77,23 +77,30 @@ export default{
 	methods: {
 		
 		updateDeliveryAddress() {
-			 this.$axios.post('/deliveryAddress/updateDeliveryAddress',this.$qs.stringify({
-                daId:this.daId,contactName:this.contactName,contactSex:this.contactSex,contactTel:this.contactTel,
-				address:this.address,userId:this.user.userId
-
-            })).then(response =>{
-				if(response.data==1){
-					// 如果请求成功提醒用户修改成功
-					alert("用户修改信息成功！！！！！！！！！")
-					history.go(-1)
-
-				}else{
-					console.log("修改失败！！！！！！")
+			this.$axios.put('/deliveryAddress/updateDeliveryAddress',this.$qs.stringify({
+				daId:this.daId,
+				contactName:this.contactName,
+				contactSex:this.contactSex,
+				contactTel:this.contactTel,
+				address:this.address,
+				userId:this.user.userId
+			}),{
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded'
 				}
-                
-            }).catch(error =>{
-                console.error(error);
-            });
+			}).then(response =>{
+				console.log("修改地址响应:", response.data);
+				if(response.data.code === 200){
+					// 如果请求成功提醒用户修改成功
+					alert("用户修改信息成功！");
+					history.go(-1);
+				}else{
+					alert("修改失败：" + response.data.msg);
+				}
+			}).catch(error =>{
+				console.error(error);
+				alert("修改地址请求失败，请重试");
+			});
 		}
 	},
 }

@@ -69,23 +69,25 @@ export default{
 	},
 	methods: {
 		saveDeliveryAddress() {
-			 this.$axios.post('/deliveryAddress/saveDeliveryAddress',this.$qs.stringify({
-                contactName:this.contactName,contactSex:this.contactSex,contactTel:this.contactTel,
-				address:this.address,userId:this.user.userId
-
-            })).then(response =>{
-				if(response.data==1){
+			this.$axios.post('/deliveryAddress/saveDeliveryAddress',this.$qs.stringify({
+				contactName:this.contactName,
+				contactSex:this.contactSex,
+				contactTel:this.contactTel,
+				address:this.address,
+				userId:this.user.userId
+			})).then(response =>{
+				console.log("添加地址响应:", response.data);
+				if(response.data.code === 200){  // 修改这里，SUCCESS的code是200
 					// 如果请求成功提醒用户添加成功
-					alert("用户添加地址成功！！！！！！！！！")
-					history.go(-1)
-
+					alert("用户添加地址成功！");
+					history.go(-1);
 				}else{
-					console.log("添加失败！！！！！！")
+					alert("添加地址失败：" + response.data.msg);
 				}
-                
-            }).catch(error =>{
-                console.error(error);
-            });
+			}).catch(error =>{
+				console.error(error);
+				alert("添加地址请求失败，请重试");
+			});
 		}
 	},
 }

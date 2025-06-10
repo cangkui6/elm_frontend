@@ -43,32 +43,29 @@ export default{
 	created() {
 		this.user = this.$getSessionStorage('user');
 		//  根据用户编号查询所属送货地址
-		 this.$axios.post('/deliveryAddress/listDeliveryAddressByUserId',this.$qs.stringify({
-                userId:this.user.userId
-            })).then(response =>{
-				if(response.data!=null){
+		 this.$axios.get('/deliveryAddress/listDeliveryAddressByUserId', {
+			params: {
+                userId: this.user.userId
+            }
+		 }).then(response =>{
+				console.log("地址列表响应:", response.data);
+				if(response.data.code === 200){
 					// 如果请求成功从后台获取到数据
-					this.deliveryAddressArray = response.data;
-					console.log(response.data);
+					this.deliveryAddressArray = response.data.data;
+					console.log("地址列表数据:", this.deliveryAddressArray);
 					for(let item of this.deliveryAddressArray){
-						if(item.contactSex==0){
+						if(item.contactSex == '0'){
 							item.contactSex = '女士'
 						}else{
 							item.contactSex = '先生'
 						}
-						
 					}
-					
-
 				}else{
-					console.log("获取用户所属送货地址失败！！！！！！")
+					console.log("获取用户所属送货地址失败！")
 				}
-                
             }).catch(error =>{
                 console.error(error);
             });
-			
-			
 	},
 	methods: {
 		edit(index){
@@ -85,21 +82,25 @@ export default{
 				}
 			})
 		},
-		remove(index){
-			this.$axios.post('/deliveryAddress/removeDeliveryAddress',this.$qs.stringify({
-                daId:this.deliveryAddressArray[index].daId
-            })).then(response =>{
-				if(response.data.code === 1 && response.data.data == 1){
-					// 如果请求成功表明删除该条记录成功
-					
-					alert("删除该条信息成功！！！！！！");
-				}else{
-					console.log("删除该条信息失败！！！！！！")
+		remove(index) {
+			this.$axios.delete('/deliveryAddress/removeDeliveryAddress', {
+				params: {
+					daId: this.deliveryAddressArray[index].daId
 				}
-               this.deliveryAddressArray.sort() 
-            }).catch(error =>{
-                console.error(error);
-            });
+			}).then(response => {
+				console.log("删除地址响应:", response.data);
+				if (response.data.code === 200) {
+					// 如果请求成功表明删除该条记录成功
+					alert("删除地址成功！");
+					// 从数组中删除对应的地址记录
+					this.deliveryAddressArray.splice(index, 1);
+				} else {
+					alert("删除地址失败：" + response.data.msg);
+				}
+			}).catch(error => {
+				console.error(error);
+				alert("删除地址请求失败，请重试");
+			});
 		},
 		add(){
 			this.$router.push({
