@@ -178,18 +178,22 @@
 						let cartArray = response.data.data;
 						console.log("购物车数据:", cartArray)
 						
-						// 遍历foodArray数组，找到前台后台对应的foodId，然后把后台查到的数量数据与前台对应上
-						for(let foodItem of this.foodArray){
-							// console.log(foodItem);
+						// 先重置所有食品数量为0
+						for(let foodItem of this.foodArray) {
 							foodItem.quantity = 0;
-							for(let cartItem of cartArray){
+						}
+						
+						// 遍历购物车数据，设置对应食品的数量
+						for(let cartItem of cartArray) {
+							for(let foodItem of this.foodArray) {
 								// 找到前台后台对应的foodId
-								if(cartItem.foodId==foodItem.foodId){
-									// 后台查到的数量数据与前台对应上
+								if(foodItem.foodId === cartItem.foodId) {
+									// 设置食品数量为购物车中的数量
 									foodItem.quantity = cartItem.quantity;
+									break;
 								}
-							}	
-						};
+							}
+						}
 					
 						// 刷新列表
 						this.foodArray.sort();
@@ -220,6 +224,7 @@
 					if(this.foodArray[index].quantity==1){
 						this.removeCart(index);
 					}else{
+						// 暂时更新前端显示
 						this.foodArray[index].quantity--;
 						this.updateCart(index);
 					}
@@ -242,33 +247,35 @@
 					// 判断foodArray数组中food对象的quantity是否为0，(因为在刚显示该页面的时候，将前台的数量设置为0)
 					// 如果是的话就向购物车表中添加一条记录
 					// 不是的话就调用更新的方法，更新数据库购物车中的数量
-						if(this.foodArray[index].quantity==0){
-								this.saveCart(index);
-							}else{
-						// 前台的数量加一，把数量发送给后台
-								this.foodArray[index].quantity++;
+					if(this.foodArray[index].quantity==0){
+						this.saveCart(index);
+					}else{
+						// 暂时更新前端显示
+						this.foodArray[index].quantity++;
+						// 调用后端更新
 						this.updateCart(index);
-							}
 					}
-				},
+				}
+			},
             
 			// 向购物车表中添加一条记录
 			saveCart(index) {
-			this.$axios.post('/cart/saveCart',this.$qs.stringify({
-			userId:this.user.userId,businessId:this.foodArray[index].businessId,foodId:this.foodArray[index].foodId
-			})).then(response=>{
-				console.log("添加购物车响应:", response.data);
-				// 如果添加成功的话，就将前台的数量设置为1.与后台cart表中数据对应
-				if(response.data.code === 200){  // 修改为200
-					this.foodArray[index].quantity = 1;
-					// 注意，数量更新后要在页面刷新，才能显示
-					this.foodArray.sort()
-				}else{
-					console.log("添加记录失败！！！！")
-				}
-			}).catch(error=>{
-				console.log(error)
-			})
+				this.$axios.post('/cart/saveCart',this.$qs.stringify({
+					userId:this.user.userId,
+					businessId:this.foodArray[index].businessId,
+					foodId:this.foodArray[index].foodId
+				})).then(response=>{
+					console.log("添加购物车响应:", response.data);
+					// 如果添加成功的话，就将前台的数量设置为1.与后台cart表中数据对应
+					if(response.data.code === 200){  // 修改为200
+						// 由于后端处理了数量更新的逻辑，这里再次请求购物车数据确保显示一致
+						this.listCart();
+					}else{
+						console.log("添加记录失败！！！！")
+					}
+				}).catch(error=>{
+					console.log(error)
+				})
 			},
 
 			// 根据用户编号、商家编号、食品编号更新数量
@@ -280,10 +287,10 @@
 					quantity:this.foodArray[index].quantity
 				})).then(response=>{
 					console.log("更新购物车响应:", response.data);
-					// 如果后台数据库中数量更新成功，就需要把前台的数据更新为后台的数量，
+					// 如果后台数据库中数量更新成功，重新获取购物车数据
 					if(response.data.code === 200){ // 修改为200
-						// 注意，数量更新后要在页面刷新，才能显示
-						this.foodArray.sort()
+						// 刷新购物车数据以保持前后端一致
+						this.listCart();
 					}else{
 						console.log("更新记录失败！！！！")
 					}
@@ -294,14 +301,15 @@
 			// 据用户编号、商家编号、食品编号删除购物车表中的一条食品记录​ 根据用户编号、商家编号删除购物车表中的多条条记录
 			removeCart(index) {
 				this.$axios.post('/cart/removeCart',this.$qs.stringify({
-					userId:this.user.userId,businessId:this.foodArray[index].businessId,foodId:this.foodArray[index].foodId
+					userId:this.user.userId,
+					businessId:this.foodArray[index].businessId,
+					foodId:this.foodArray[index].foodId
 				})).then(response=>{
 					console.log("删除购物车响应:", response.data);
-					// 如果删除该条记录成功的话，就需要将前台的数据清除为0，并且减号按钮和数量要消失不见
+					// 如果删除该条记录成功的话，刷新购物车数据
 					if(response.data.code === 200){ // 修改为200
-						this.foodArray[index].quantity=0;
-						// 刷新列表
-						this.foodArray.sort()
+						// 刷新购物车数据以保持前后端一致
+						this.listCart();
 					}
 				}).catch(error=>{
 					console.log(error)
