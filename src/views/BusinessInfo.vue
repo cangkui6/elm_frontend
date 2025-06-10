@@ -34,9 +34,11 @@
 					<div class="food-right">
 						<div>
 							<!-- 减号按钮 -->
-							<i class="fa fa-minus-circle" @click="minus(index)" v-show="item.quantity!=0"></i>
+							<i class="fa fa-minus-circle" @click="minus(index)" v-show="item.quantity>0"></i>
+							<!-- 添加一个额外的减号按钮，当数量为0时也显示但是颜色变淡且禁用点击 -->
+							<button class="minus-btn disabled" v-show="item.quantity==0">-</button>
 						</div>
-						<p><span v-show="item.quantity>0">{{item.quantity}}</span></p>
+						<p><span v-if="item.quantity>0">{{item.quantity}}</span></p>
 						<div>
 							<!-- 加号按钮 -->
 							<i class="fa fa-plus-circle" @click="plus(index)"></i>
@@ -51,10 +53,10 @@
 				<div class="cart-left">
 					<div class="cart-left-icon">
 						<i class="fa fa-shopping-cart"></i>
-						<div class="cart-left-icon-quantity" v-show="this.countPrice.count>0">{{countPrice.count}}</div>
+						<div class="cart-left-icon-quantity" v-show="totalCount>0">{{totalCount}}</div>
 					</div>
 					<div class="cart-left-info">
-						<p>&#165;{{Price}}</p>
+						<p>&#165;{{totalPrice}}</p>
 						<p>另需配送费{{business.deliveryPrice}}元</p>
 					</div>
 				</div>
@@ -172,8 +174,7 @@
 					if(response.data.code === 200) {
 						let cartArray = response.data.data;
 						console.log("购物车数据:", cartArray)
-						// console.log('222222222222'+cartArray);
-						// console.log('1111111111111111'+this.foodArray);
+						
 						// 遍历foodArray数组，找到前台后台对应的foodId，然后把后台查到的数量数据与前台对应上
 						for(let foodItem of this.foodArray){
 							// console.log(foodItem);
@@ -183,21 +184,16 @@
 								if(cartItem.foodId==foodItem.foodId){
 									// 后台查到的数量数据与前台对应上
 									foodItem.quantity = cartItem.quantity;
-									// 同步购物车数量（小红点）的值
-									this.countPrice.count=this.countPrice.count+foodItem.quantity
-									
 								}
 							}	
 						};
-					
+						
 						// 刷新列表
 						this.foodArray.sort();
 					}
-
 				}).catch(error=>{
 					console.log(error)
 				})
-
 			},
            
             minus(index){
@@ -208,18 +204,19 @@
                         path:'/login'
                     })
                 }else{
-					// 点击一下减号按钮，购物车数量（小红点）减1
-					this.countPrice.count--;
-					// this.countsum1 = this.countsum1-1;
-					// 登录的话，就留在该页面，判断一下前台的数量是否为1，如果是1的话，再点击减号按钮，购物车就需要删除该条记录
+					// 防止数量为0时点击减号
+					if(this.foodArray[index].quantity <= 0) {
+						return;
+					}
+					
+					// 登录的话，就留在该页面，判断一下前台的数量是否为1
+					// 如果是1的话，再点击减号按钮，购物车就需要删除该条记录
 					if(this.foodArray[index].quantity==1){
 						this.removeCart(index);
 					}else{
 						this.foodArray[index].quantity--;
 						this.updateCart(index);
-
 					}
-					
 				}
                 
             },
@@ -231,25 +228,19 @@
                         path:'/login'
                      })
                 }else{
-					// 点击一下加号按钮，购物车数量（小红点）加1
-					this.countPrice.count++
-					// this.countsum = this.countsum+1
 					// 登录了就留在该页面
 					// 判断foodArray数组中food对象的quantity是否为0，(因为在刚显示该页面的时候，将前台的数量设置为0)
 					// 如果是的话就向购物车表中添加一条记录
 					// 不是的话就调用更新的方法，更新数据库购物车中的数量
-						if(this.foodArray[index].quantity==0){
-								this.saveCart(index);
-							}else{
-								// this.foodArray[index].quantity++;前台的数量加一，把数量发送给后台
-								this.foodArray[index].quantity++;
-								this.updateCart(index,1);
-							}
-							
-						
-						
+					if(this.foodArray[index].quantity==0){
+						this.saveCart(index);
+					}else{
+						// 前台的数量加一，把数量发送给后台
+						this.foodArray[index].quantity++;
+						this.updateCart(index);
 					}
-				},
+				}
+			},
             
 			// 向购物车表中添加一条记录
 			saveCart(index) {
@@ -273,7 +264,10 @@
 			// 根据用户编号、商家编号、食品编号更新数量
 			updateCart(index) {
 				this.$axios.post('/cart/updateCart',this.$qs.stringify({
-					userId:this.user.userId,businessId:this.foodArray[index].businessId,foodId:this.foodArray[index].foodId,quantity:this.foodArray[index].quantity
+					userId:this.user.userId,
+					businessId:this.foodArray[index].businessId,
+					foodId:this.foodArray[index].foodId,
+					quantity:this.foodArray[index].quantity
 				})).then(response=>{
 					console.log("更新购物车响应:", response.data);
 					// 如果后台数据库中数量更新成功，就需要把前台的数据更新为后台的数量，
@@ -306,15 +300,29 @@
 			
         },
 		computed: {
-			Price() {
-					// 因为在页面上产生操作就会回到这里，就会重新遍历foodArray数组，所以将总价格重置为0
-					this.countPrice.price = 0;
-				for(let i = 0;i < this.foodArray.length;i++){
-					
-					this.countPrice.price = this.countPrice.price + this.foodArray[i].quantity * this.foodArray[i].foodPrice
+			totalPrice() {
+				// 计算总价格
+				let price = 0;
+				for(let i = 0; i < this.foodArray.length; i++){
+					if(this.foodArray[i].quantity > 0) {
+						price += this.foodArray[i].quantity * this.foodArray[i].foodPrice;
+					}
 				}
-				console.log(this.countPrice.price)
-				return this.countPrice.price
+				
+				console.log("总价格:", price);
+				return price;
+			},
+			totalCount() {
+				// 计算总数量
+				let count = 0;
+				for(let i = 0; i < this.foodArray.length; i++){
+					if(this.foodArray[i].quantity > 0) {
+						count += this.foodArray[i].quantity;
+					}
+				}
+				
+				console.log("总数量:", count);
+				return count;
 			}
 		}
 		
@@ -429,6 +437,25 @@
 	font-size: 5.5vw;
 	color: #999;
 	cursor: pointer;
+}
+.wrapper .food li .food-right .minus-btn{
+	width: 5.5vw;
+	height: 5.5vw;
+	border-radius: 50%;
+	background-color: #eee;
+	color: #999;
+	font-size: 4vw;
+	font-weight: bold;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.wrapper .food li .food-right .minus-btn.disabled {
+	background-color: #f8f8f8;
+	color: #ddd;
+	cursor: default;
 }
 .wrapper .food li .food-right p{
 	font-size: 3.6vw;

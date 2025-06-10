@@ -90,21 +90,26 @@
 						this.foodArray = response.data.data;
 						console.log("购物车数据:", this.foodArray);
 						console.log("商家ID:", this.businessId);
-						for(let i = 0;i < this.foodArray.length;i++){
-							this.businessname = this.foodArray[i].business.businessName;
-							this.deliveryprice = this.foodArray[i].business.deliveryPrice;
-							this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
-							// if(this.foodArray[i].businessId!=this.businessid){
-							// 	console.log("111111111111111111111")
-							// 	// this.foodArray.splice(i,1);
-							// 	console.log(this.foodArray[i].businessId)
-							// 	console.log(this.businessid)
-								
-							// }else{
-							// 	continue;
-							// }
-							// console.log(this.foodArray)
+						
+						// 重置总金额
+						this.ordertotal = 0;
+						
+						// 只取第一个商品来获取商家信息
+						if(this.foodArray.length > 0) {
+							this.businessname = this.foodArray[0].business.businessName;
+							this.deliveryprice = this.foodArray[0].business.deliveryPrice;
 						}
+						
+						// 重新计算订单总价
+						for(let i = 0;i < this.foodArray.length;i++){
+							// 只对有效数量的商品计算价格
+							if(this.foodArray[i].quantity > 0) {
+								this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
+							}
+						}
+						
+						console.log("商品总价:", this.ordertotal);
+						console.log("配送费:", this.deliveryprice);
 					}
 						
 				}).catch(error=>{
@@ -127,11 +132,25 @@
             toOrder() {
 				if(this.address==null){
 					alert("请先选择收货地址！！")
+					return; // 添加return阻止继续执行
 				}
-				if(this.address!=null){
-					// 调用后台的createOrders合成方法
-					this.$axios.post('/order/createOrders',this.$qs.stringify({
-					userId:this.user.userId,businessId:this.businessId,daId:this.daId,orderTotal:this.ordertotal
+				
+				// 确保配送费是数字
+				const deliveryPrice = parseFloat(this.deliveryprice) || 0;
+				// 计算总金额（商品总价+配送费）
+				const totalAmount = this.ordertotal + deliveryPrice;
+				
+				console.log("提交订单 - 商品总价:", this.ordertotal);
+				console.log("提交订单 - 配送费:", deliveryPrice);
+				console.log("提交订单 - 最终总价:", totalAmount);
+				
+				// 调用后台的createOrders合成方法
+				this.$axios.post('/order/createOrders',this.$qs.stringify({
+					userId:this.user.userId,
+					businessId:this.businessId,
+					daId:this.daId,
+					// 修改订单总金额，加上配送费
+					orderTotal: totalAmount
 				})).then(response =>{
 					console.log("创建订单响应:", response.data);
 					if(response.data.code === 200 && response.data.data != 0){
@@ -157,7 +176,6 @@
 				}).catch(error =>{
 					console.error(error);
 				});
-				}
             }
         }
     }

@@ -13,7 +13,7 @@
 					{{this.orderArray.business.businessName}}
 					<i class="fa fa-caret-down" id="showBtn" @click="viewif()"></i>
 				</p>
-				<p>&#165;{{this.orderArray.orderTotal+this.orderArray.business.deliveryPrice}}</p>
+				<p>&#165;{{this.orderArray.orderTotal}}</p>
 			</div>
 			
 			<!-- 订单明细部分 -->
