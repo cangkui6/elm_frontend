@@ -190,7 +190,7 @@
 								}
 							}	
 						};
-						
+					
 						// 刷新列表
 						this.foodArray.sort();
 					}
@@ -242,15 +242,15 @@
 					// 判断foodArray数组中food对象的quantity是否为0，(因为在刚显示该页面的时候，将前台的数量设置为0)
 					// 如果是的话就向购物车表中添加一条记录
 					// 不是的话就调用更新的方法，更新数据库购物车中的数量
-					if(this.foodArray[index].quantity==0){
-						this.saveCart(index);
-					}else{
+						if(this.foodArray[index].quantity==0){
+								this.saveCart(index);
+							}else{
 						// 前台的数量加一，把数量发送给后台
-						this.foodArray[index].quantity++;
+								this.foodArray[index].quantity++;
 						this.updateCart(index);
+							}
 					}
-				}
-			},
+				},
             
 			// 向购物车表中添加一条记录
 			saveCart(index) {

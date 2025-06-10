@@ -141,7 +141,7 @@ export default {
         // 计算订单总价（含配送费）
         calculateTotal(order) {
             if (!order) return 0;
-            return order.orderTotal + (order.business?.deliveryPrice || 0);
+            return order.orderTotal;
         },
 		viewif(order) {
             if (order) {

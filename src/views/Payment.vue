@@ -26,14 +26,14 @@
 						<li v-if="foodItem && foodItem.food">
 							<p>{{foodItem.food.foodName}} x {{foodItem.quantity}}</p>
 							<p>&#165;{{(foodItem.food.foodPrice * foodItem.quantity).toFixed(0)}}</p>
-						</li>
+				</li>
 					</template>
-					
+				
 					<li v-if="orderArray.business && orderArray.business.deliveryPrice">
-						<p>配送费</p>
+					<p>配送费</p>
 						<p>&#165;{{Number(orderArray.business.deliveryPrice).toFixed(0)}}</p>
-					</li>
-				</ul>
+				</li>
+			</ul>
 				<ul class="order-detailet" v-else>
 					<li><p>加载明细中...</p></li>
 				</ul>
