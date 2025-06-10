@@ -102,14 +102,15 @@ export default {
 				this.$axios.post('/user/getUserById',this.$qs.stringify({
 				userId : this.user.userId
 				})).then(response=>{
-					if(response.data.code === 1 && response.data.data == 1){
+					console.log("检查用户存在响应:", response.data);
+					if(response.data.code === 200 && response.data.data === 1){
 						alert("该用户已存在，请前往登录")
 						this.$router.push({
 							path:'/login'
 						})
 					}
 				}).catch(error=>{
-					console.log("error")
+					console.log("error", error)
 				})
 			}else{
 				alert("用户名格式输入不正确")
@@ -138,12 +139,23 @@ export default {
 				userId:this.user.userId,password:this.user.password,userName:this.user.userName,userSex:this.user.userSex
 			})).then(response=>{
 				console.log(response.data)
-				if(response.data.code === 1 && response.data.data == 1){
+				if(response.data.code === 200){
 					alert("注册成功")
-					this.$router.go(-1)
+					this.$router.push({
+						path:'/login',
+						query: {
+							from: 'register',
+							userId: this.user.userId // 顺便传递用户ID，方便登录
+						}
+					})
+				} else {
+					alert("注册失败：" + (response.data.message || "未知错误"))
+					this.disabled = false
 				}
 			}).catch(error=>{
 				console.log(error)
+				alert("注册请求失败，请重试")
+				this.disabled = false
 			})
 			
 			}else{

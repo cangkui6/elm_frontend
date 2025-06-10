@@ -63,8 +63,7 @@ export default {
                 userId:'',
                 password:''
             },
-			
-			
+            isFromRegister: false
         }
     },
 	methods: {
@@ -86,16 +85,20 @@ export default {
 						// 如果正确的话就登陆成功，就返回之前点餐的页面
                         console.log("登录验证响应:", respone.data);
 						if(respone.data.code === 200 && respone.data.data != null){
-							history.go(-1)
-							this.user = respone.data.data;
-							// // 为了防止数据溢出，不将图片的信息存入
-							// this.user.userImg=''
-							this.$setSessionStorage('user',respone.data.data)
+							// 保存用户信息到会话存储
+							this.$setSessionStorage('user', respone.data.data);
 							
-							// 反之，则用户名或密码错误
-						}else{
-							alert("用户名或密码错误！！")
-
+							// 判断是否从注册页面来，如果是则跳转到首页，否则返回上一页
+							if (this.$route.query.from === 'register') {
+								// 从注册页面来的，直接跳转到首页
+								this.$router.push('/index');
+							} else {
+								// 从其他页面来的，返回上一页
+								history.go(-1);
+							}
+							
+						} else {
+							alert("用户名或密码错误！！");
 						}
 
 						console.log(respone.data)
@@ -115,19 +118,22 @@ export default {
         },
 		toRegister(){
 			this.$router.push({
-                        path:'/register'
-                    })
+                path:'/register'
+            })
 		}
     },
     
     created() {
-		
-        
+		// 检查是否从注册页面过来
+		if (this.$route.query.from === 'register') {
+			console.log('用户从注册页面跳转过来');
+			// 如果有传递userId，自动填充到表单中
+			if (this.$route.query.userId) {
+				this.user.userId = this.$route.query.userId;
+			}
+		}
     },
-    
-        
-    }
-
+}
 </script>
 <style scoped>
 /****************** 总容器 ******************/
