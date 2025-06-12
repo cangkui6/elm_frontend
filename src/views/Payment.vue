@@ -87,9 +87,11 @@ export default {
         
         console.log("获取订单信息，orderId:", this.orderId);
         
-		this.$axios.post('/order/getOrdersById',this.$qs.stringify({
-                orderId:this.orderId
-            })).then(response =>{
+		this.$axios.get('/order/getOrderById', {
+                params: {
+                    orderId: this.orderId
+                }
+            }).then(response =>{
 				console.log("订单详情响应:", response.data);
 				if(response.data.code === 200 && response.data.data){
 					// 确保数据结构正确
@@ -106,7 +108,7 @@ export default {
 							businessName: '未知商家',
 							deliveryPrice: 0
 						},
-						list: Array.isArray(responseData.list) ? responseData.list : []
+						list: Array.isArray(responseData.orderDetailList) ? responseData.orderDetailList : []
 					};
 					
 					this.loading = false;
@@ -145,7 +147,11 @@ export default {
 			this.$axios.put('/order/updateOrderState', this.$qs.stringify({
 				orderId: this.orderId,
 				orderState: 1  // 1表示已支付
-			})).then(response => {
+			}), {
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded'
+				}
+			}).then(response => {
 				console.log("支付响应:", response.data);
 				if (response.data.code === 200) {
 					// 支付成功

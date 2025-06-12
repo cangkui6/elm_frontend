@@ -62,6 +62,11 @@ export default {
                     this.businessArray.forEach((business, index) => {
                         console.log(`${index+1}. ID: ${business.businessId}, 名称: ${business.businessName}`);
                     });
+                    
+                    // 如果用户已登录，获取购物车数量
+                    if (this.user && this.user.userId) {
+                        this.getCartQuantities();
+                    }
                 }
             } else {
                 console.warn("未获取到商家数据或返回错误");

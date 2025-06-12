@@ -92,9 +92,11 @@ export default {
 		console.log("当前用户信息:", this.user);
 
         if (this.user && this.user.userId) {
-            this.$axios.post('/order/listOrdersByUserId',this.$qs.stringify({
-                userId:this.user.userId
-            })).then(response=>{
+            this.$axios.get('/order/listOrdersByUserId', {
+                params: {
+                    userId: this.user.userId
+                }
+            }).then(response=>{
                 console.log("订单列表API返回原始数据:", response);
                 if(response.data != null){
                     // 检查response.data是否有code和data字段（ResponseResult格式）

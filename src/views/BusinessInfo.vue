@@ -212,7 +212,8 @@
 					}else{
 						// 暂时更新前端显示
 						this.foodArray[index].quantity--;
-						this.updateCart(index);
+						// 使用减少数量的逻辑
+						this.decreaseCart(index);
 					}
 				}
                 
@@ -265,8 +266,8 @@
 
 			// 根据用户编号、商家编号、食品编号更新数量
 			updateCart(index) {
-				// 使用cart/add端点递增或递减商品数量
-				this.$axios.post('cart/add', this.$qs.stringify({
+				// 使用update端点更新商品数量
+				this.$axios.post('cart/update', this.$qs.stringify({
 					userId: this.user.userId,
 					businessId: this.businessId,
 					foodId: this.foodArray[index].foodId,
@@ -286,8 +287,8 @@
 			
 			// 根据用户编号、商家编号、食品编号删除购物车表中的一条食品记录
 			removeCart(index) {
-				// 由于consumer服务没有专门的删除接口，使用cart/add接口传入数量0
-				this.$axios.post('cart/add', this.$qs.stringify({
+				// 直接调用专门的update接口，传入数量0
+				this.$axios.post('cart/update', this.$qs.stringify({
 					userId: this.user.userId,
 					businessId: this.businessId,
 					foodId: this.foodArray[index].foodId,
@@ -297,6 +298,27 @@
 					if(response.data.code === 200) {
 						// 刷新购物车数据以保持前后端一致
 						this.listCart();
+					}
+				}).catch(error => {
+					console.log(error);
+				});
+			},
+			
+			// 减少购物车中的数量
+			decreaseCart(index) {
+				// 直接调用专门的update接口，传入当前数量
+				this.$axios.post('cart/update', this.$qs.stringify({
+					userId: this.user.userId,
+					businessId: this.businessId,
+					foodId: this.foodArray[index].foodId,
+					quantity: this.foodArray[index].quantity // 发送减少后的数量
+				})).then(response => {
+					console.log("减少购物车响应:", response.data);
+					if(response.data.code === 200) {
+						// 刷新购物车数据以保持前后端一致
+						this.listCart();
+					} else {
+						console.log("减少数量失败");
 					}
 				}).catch(error => {
 					console.log(error);

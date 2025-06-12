@@ -89,8 +89,10 @@
             }).then(response => {
                 console.log("购物车响应:", response.data);
                 if(response.data.code === 200) {
-                    this.foodArray = response.data.data;
-                    console.log("购物车数据:", this.foodArray);
+                    // 过滤掉数量为0的商品
+                    const filteredCartItems = response.data.data.filter(item => item.quantity > 0);
+                    this.foodArray = filteredCartItems;
+                    console.log("过滤后的购物车数据:", this.foodArray);
                     
                     // 重置总金额
                     this.ordertotal = 0;
@@ -104,9 +106,7 @@
                     // 重新计算订单总价
                     for(let i = 0; i < this.foodArray.length; i++){
                         // 只对有效数量的商品计算价格
-                        if(this.foodArray[i].quantity > 0) {
-                            this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
-                        }
+                        this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
                     }
                     
                     console.log("商品总价:", this.ordertotal);
@@ -139,17 +139,42 @@
 				// 计算总金额（商品总价+配送费）
 				const totalAmount = this.ordertotal + deliveryPrice;
 				
+				// 确保businessId和daId是整数类型
+				const businessId = parseInt(this.businessId);
+				const daId = parseInt(this.daId);
+				
 				console.log("提交订单 - 商品总价:", this.ordertotal);
 				console.log("提交订单 - 配送费:", deliveryPrice);
 				console.log("提交订单 - 最终总价:", totalAmount);
+				console.log("提交订单 - 商家ID:", businessId);
+				console.log("提交订单 - 地址ID:", daId);
 				
-				// 使用consumer服务创建订单
-				this.$axios.post('order/create', {
-					userId: this.user.userId,
-					businessId: this.businessId,
-					daId: this.daId,
-					orderTotal: totalAmount
-				}).then(response => {
+				// 获取购物车数据来创建订单
+				this.$axios.get('cart', {
+					params: {
+						userId: this.user.userId,
+						businessId: this.businessId
+					}
+				}).then(cartResponse => {
+					// 过滤掉数量为0的商品
+					const cartItems = cartResponse.data.data.filter(item => item.quantity > 0);
+					
+					// 创建订单明细列表
+					const orderDetailList = cartItems.map(item => {
+						return {
+							foodId: item.foodId,
+							quantity: item.quantity
+						};
+					});
+					
+					// 使用consumer服务创建订单
+					this.$axios.post('order/create', {
+						userId: this.user.userId,
+						businessId: businessId,
+						daId: daId,
+						orderTotal: totalAmount,
+						orderDetailList: orderDetailList
+					}).then(response => {
 					console.log("创建订单响应:", response.data);
 					if(response.data.code === 200 && response.data.data != 0){
 						this.orderId = response.data.data;
@@ -167,6 +192,9 @@
 					}
 				}).catch(error => {
 					console.error(error);
+				});
+				}).catch(error => {
+					console.error("获取购物车数据失败", error);
 				});
             }
         }
