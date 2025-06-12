@@ -69,24 +69,16 @@ export default {
 	methods: {
 		
         backorder(){
-			
-			// 首先向后台发送用户名，调用根据用户编号查询用户表返回的行数方法
-			// 判断数据库有没有该用户
-			this.$axios.post('/user/getUserById',this.$qs.stringify({
-            userId : this.user.userId
-        	})).then(respone=>{
-                console.log("查询用户响应:", respone.data);
-				// 如果存在该用户的话，就调用根据用户编号与密码查询用户信息方法
-				// 判断该用户输入的密码是否正确
-				if(respone.data.code === 200 && respone.data.data == 1){
-					this.$axios.post('/user/getUserByIdByPass',this.$qs.stringify({
-						userId : this.user.userId,password : this.user.password
-					})).then(respone=>{
-						// 如果正确的话就登陆成功，就返回之前点餐的页面
-                        console.log("登录验证响应:", respone.data);
-						if(respone.data.code === 200 && respone.data.data != null){
+			// 使用consumer服务进行登录
+			this.$axios.post('login',this.$qs.stringify({
+				userId: this.user.userId,
+				password: this.user.password
+			})).then(response => {
+				console.log("登录响应:", response.data);
+				// 验证登录成功
+				if(response.data.code === 200 && response.data.data != null){
 							// 保存用户信息到会话存储
-							this.$setSessionStorage('user', respone.data.data);
+					this.$setSessionStorage('user', response.data.data);
 							
 							// 判断是否有重定向路径
 							const redirectPath = this.$route.query.redirect;
@@ -100,25 +92,13 @@ export default {
 								// 从其他页面来的，返回上一页
 								history.go(-1);
 							}
-							
 						} else {
 							alert("用户名或密码错误！！");
 						}
-
-						console.log(respone.data)
-					}).catch(error=>{
-						console.log(error)
-					})
-					
-				}else{
-				// 用户不存在，就需要注册
-					alert("用户未注册，请注册")
-				}
-
-			}).catch(error=>{
-				console.log(error)
-			})
-            
+			}).catch(error => {
+				console.log(error);
+				alert("登录失败，请稍后再试");
+			});
         },
 		toRegister(){
 			this.$router.push({

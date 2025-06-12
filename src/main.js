@@ -23,7 +23,7 @@ import {
 const app = createApp(App);
 
 // 配置 axios 的基础 URL
-axios.defaults.baseURL = 'http://localhost:9000/';
+axios.defaults.baseURL = 'http://localhost:9000/consumer/';
 
 // 将 axios 和 qs 挂载到全局实例上
 app.config.globalProperties.$axios = axios;

@@ -42,30 +42,30 @@ export default{
 	},
 	created() {
 		this.user = this.$getSessionStorage('user');
-		//  根据用户编号查询所属送货地址
-		 this.$axios.get('/deliveryAddress/listDeliveryAddressByUserId', {
+		// 使用consumer服务获取地址列表
+		this.$axios.get('addresses', {
 			params: {
-                userId: this.user.userId
-            }
-		 }).then(response =>{
-				console.log("地址列表响应:", response.data);
-				if(response.data.code === 200){
-					// 如果请求成功从后台获取到数据
-					this.deliveryAddressArray = response.data.data;
-					console.log("地址列表数据:", this.deliveryAddressArray);
-					for(let item of this.deliveryAddressArray){
-						if(item.contactSex == '0'){
-							item.contactSex = '女士'
-						}else{
-							item.contactSex = '先生'
-						}
+				userId: this.user.userId
+			}
+		}).then(response => {
+			console.log("地址列表响应:", response.data);
+			if(response.data.code === 200){
+				// 如果请求成功从后台获取到数据
+				this.deliveryAddressArray = response.data.data;
+				console.log("地址列表数据:", this.deliveryAddressArray);
+				for(let item of this.deliveryAddressArray){
+					if(item.contactSex == '0'){
+						item.contactSex = '女士'
+					}else{
+						item.contactSex = '先生'
 					}
-				}else{
-					console.log("获取用户所属送货地址失败！")
 				}
-            }).catch(error =>{
-                console.error(error);
-            });
+			}else{
+				console.log("获取用户所属送货地址失败！")
+			}
+		}).catch(error => {
+			console.error(error);
+		});
 	},
 	methods: {
 		edit(index){

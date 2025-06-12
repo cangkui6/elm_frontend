@@ -74,48 +74,47 @@
         },
        
         created() {
-			
-			
 			this.user = this.$getSessionStorage('user');
             if(this.address!=null){
 				this.explain = this.address
 			};
-			console.log('11'+this.businessId)
-						this.$axios.post('/cart/listCart',this.$qs.stringify({
-					userId:this.user.userId,businessId:this.businessId
-				})).then(response=>{
-					console.log("购物车响应:", response.data);
-					// 如果查询成功的话，把查到的数据保存在foodArray数组里,
-					if(response.data.code === 200) { // 修改为200
-						this.foodArray = response.data.data;
-						console.log("购物车数据:", this.foodArray);
-						console.log("商家ID:", this.businessId);
-						
-						// 重置总金额
-						this.ordertotal = 0;
-						
-						// 只取第一个商品来获取商家信息
-						if(this.foodArray.length > 0) {
-							this.businessname = this.foodArray[0].business.businessName;
-							this.deliveryprice = this.foodArray[0].business.deliveryPrice;
-						}
-						
-						// 重新计算订单总价
-						for(let i = 0;i < this.foodArray.length;i++){
-							// 只对有效数量的商品计算价格
-							if(this.foodArray[i].quantity > 0) {
-								this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
-							}
-						}
-						
-						console.log("商品总价:", this.ordertotal);
-						console.log("配送费:", this.deliveryprice);
-					}
-						
-				}).catch(error=>{
-					console.log(error)
-				});
-			
+			console.log('商家ID:' + this.businessId);
+            
+            // 使用consumer服务获取购物车数据
+            this.$axios.get('cart', {
+                params: {
+                    userId: this.user.userId,
+                    businessId: this.businessId
+                }
+            }).then(response => {
+                console.log("购物车响应:", response.data);
+                if(response.data.code === 200) {
+                    this.foodArray = response.data.data;
+                    console.log("购物车数据:", this.foodArray);
+                    
+                    // 重置总金额
+                    this.ordertotal = 0;
+                    
+                    // 只取第一个商品来获取商家信息
+                    if(this.foodArray.length > 0) {
+                        this.businessname = this.foodArray[0].business.businessName;
+                        this.deliveryprice = this.foodArray[0].business.deliveryPrice;
+                    }
+                    
+                    // 重新计算订单总价
+                    for(let i = 0; i < this.foodArray.length; i++){
+                        // 只对有效数量的商品计算价格
+                        if(this.foodArray[i].quantity > 0) {
+                            this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
+                        }
+                    }
+                    
+                    console.log("商品总价:", this.ordertotal);
+                    console.log("配送费:", this.deliveryprice);
+                }
+            }).catch(error => {
+                console.log(error);
+            });
         },
 		 methods: {
 			toUserAddress() {
@@ -132,7 +131,7 @@
             toOrder() {
 				if(this.address==null){
 					alert("请先选择收货地址！！")
-					return; // 添加return阻止继续执行
+					return;
 				}
 				
 				// 确保配送费是数字
@@ -144,36 +143,29 @@
 				console.log("提交订单 - 配送费:", deliveryPrice);
 				console.log("提交订单 - 最终总价:", totalAmount);
 				
-				// 调用后台的createOrders合成方法
-				this.$axios.post('/order/createOrders',this.$qs.stringify({
-					userId:this.user.userId,
-					businessId:this.businessId,
-					daId:this.daId,
-					// 修改订单总金额，加上配送费
+				// 使用consumer服务创建订单
+				this.$axios.post('order/create', {
+					userId: this.user.userId,
+					businessId: this.businessId,
+					daId: this.daId,
 					orderTotal: totalAmount
-				})).then(response =>{
+				}).then(response => {
 					console.log("创建订单响应:", response.data);
 					if(response.data.code === 200 && response.data.data != 0){
 						this.orderId = response.data.data;
-			// 如果请求成功,返回orderId订单编号
-			// 则表明 * 根据用户编号、商家编号、订单总金额、送货地址编号向订单表中添加一条记录，​ 并获取自动生成的订单编号，​
-			//  * 然后根据用户编号、商家编号从购物车表中查询所有数据，
-			//  * 批量添加到订单明细表中，​
-			//  * 然后根据用户编号、商家编号删除购物车表中的数据。
-						console.log(response.data)
-						// 成功之后跳转到支付页面
-							this.$router.push({
-								path:'/payment',
-								query:{
-									orderId:this.orderId,
-								}
-							})
+						console.log("创建的订单ID:", this.orderId);
 						
-					}else{
-						console.log("调用合成方法失败！！！！！！")
+						// 跳转到支付页面
+						this.$router.push({
+							path:'/payment',
+							query:{
+								orderId: this.orderId
+							}
+						});
+					} else {
+						console.log("创建订单失败");
 					}
-					
-				}).catch(error =>{
+				}).catch(error => {
 					console.error(error);
 				});
             }

@@ -41,67 +41,40 @@ export default {
     created() {
 		this.user = this.$getSessionStorage('user');
         
-        // 先查询所有商家数据，用于比对
-        this.$axios.get('/business/getAllBusinessesFromDb').then(response => {
-            console.log("数据库中所有商家数据:", response.data);
+        // 使用consumer服务获取商家列表
+        this.$axios.get('businesses', {
+            params: {
+                orderTypeId: this.orderTypeId,
+                userId: this.user ? this.user.userId : null
+            }
+        }).then(response => {
+            console.log("获取到的商家数据:", response.data);
             
-            // 获取数据库中的商家总数
-            const totalBusinesses = response.data.data.businessList.length;
-            console.log(`数据库中共有 ${totalBusinesses} 个商家`);
-            
-            // 获取各分类商家数量
-            const categoryCountMap = response.data.data.categoryCountMap;
-            console.log("各分类商家数量:", categoryCountMap);
-            
-            // 显示当前查询的分类ID
-            console.log("当前查询的分类ID:", this.orderTypeId);
-        });
-        
-        // 利用axios根据categoryId查询商家的信息
-        this.$axios.post('/business/listBusinessByOrderTypeId',this.$qs.stringify({
-            categoryId:this.orderTypeId
-        })).then(response=>{
-            this.businessArray = response.data.data;
-            console.log("特定分类下的商家数据:", response.data);
-            console.log(`当前分类 ${this.orderTypeId} 下获取到 ${this.businessArray ? this.businessArray.length : 0} 个商家`);
-            
-            // 列出所有获取到的商家ID和名称
-            if (this.businessArray && this.businessArray.length > 0) {
-                console.log("获取到的商家列表:");
-                this.businessArray.forEach((business, index) => {
-                    console.log(`${index+1}. 商家ID: ${business.businessId}, 名称: ${business.businessName}, 分类ID: ${business.orderTypeId}`);
-                });
-            
-                // 确保每个商家对象都有quantity字段，并初始化为0
-                this.businessArray = this.businessArray.map(business => {
-                    business.quantity = 0; // 显式初始化为数字0
-                    return business;
-                });
+            if (response.data.code === 200 && response.data.data) {
+                this.businessArray = response.data.data;
                 
-                // 打印初始化后的商家列表
-                console.log("初始化后的商家列表:");
-                this.businessArray.forEach(business => {
-                    console.log(`商家 ${business.businessId} (${business.businessName}) 的初始购物车数量: ${business.quantity} (类型: ${typeof business.quantity})`);
-                });
+                // 打印获取到的商家数量
+                console.log(`获取到 ${this.businessArray.length} 个商家`);
                 
-                // 如果用户已登录，单独获取购物车数量
-                if (this.user && this.user.userId) {
-                    this.getCartQuantities();
+                // 列出所有获取到的商家
+                if (this.businessArray.length > 0) {
+                    console.log("商家列表:");
+                    this.businessArray.forEach((business, index) => {
+                        console.log(`${index+1}. ID: ${business.businessId}, 名称: ${business.businessName}`);
+                    });
                 }
             } else {
-                console.warn("未获取到商家数据或商家列表为空");
+                console.warn("未获取到商家数据或返回错误");
             }
-        }).catch(error=>{
-            console.log("获取商家列表失败:", error)
-        })
+        }).catch(error => {
+            console.log("获取商家列表失败:", error);
+        });
     },
 	methods: {
 		toBusinessInfo(businessId) {
 			// 跳转页面
 			 this.$router.push({
                 path:'/businessInfo',
-                // 参数,后面的businessId是传进来的toBusinessInfo(businessId),这是形参
-				// <li v-for="item in businessArray" @click="toBusinessInfo(item.businessId)"> 这是实参
                 query:{
                     businessId:businessId
                 }
@@ -118,7 +91,7 @@ export default {
             console.log("开始获取购物车数量 - userId:", this.user.userId);
             
             // 调用后端专门的购物车数量接口
-            this.$axios.post('/business/getCartQuantityMap', this.$qs.stringify({
+            this.$axios.post('/cart/getCartQuantityMap', this.$qs.stringify({
                 userId: this.user.userId
             })).then(response => {
                 console.log("购物车数量数据:", response.data);

@@ -101,46 +101,33 @@
             this.user = this.$getSessionStorage('user');
 			console.log(this.user);
 
-            // 通过$axios向后台发送异步请求，获取商家信息
-            this.$axios.post('/business/getBusinessById',this.$qs.stringify({
-                businessId:this.businessId
-            })).then(response =>{
-                console.log("商家信息响应:", response.data);
-				if(response.data.code === 200){  // 修改这里，SUCCESS的code是200
-					// 如果请求成功从后台获取到数据
-                this.business = response.data.data;
-                console.log("商家数据:", this.business)
-				}else{
-					console.log("获取商家信息失败！！！！！！")
-				}
-                
-            }).catch(error =>{
-                console.error(error);
-            });
-
-
-            // 通过$axios向后台发送异步请求,获取食品信息
-            this.$axios.post('/food/listFoodByBusinessId',this.$qs.stringify({
-                businessId:this.businessId
-            })).then(response =>{
-                console.log("食品信息响应:", response.data);
-				if(response.data.code === 200){  // 修改这里，SUCCESS的code是200
-					// 如果请求成功从后台获取到数据
-                this.foodArray = response.data.data;
+            // 使用consumer服务获取商家和食品信息
+            this.$axios.get(`business/${this.businessId}`, {
+                params: {
+                    userId: this.user ? this.user.userId : null
+                }
+            }).then(response => {
+                console.log("商家和食品信息响应:", response.data);
+                if(response.data.code === 200) {
+                    this.business = response.data.data.business;
+                    this.foodArray = response.data.data.foodList;
+                    
+                    console.log("商家数据:", this.business);
                 console.log("食品数据:", this.foodArray);
-                for(let i = 0;i < this.foodArray.length;i++){
+                    
+                    // 初始化食品数量
+                    for(let i = 0; i < this.foodArray.length; i++){
 					this.foodArray[i].quantity = 0;
 				}
-				// 注意！！！！！！！！！！
-				if(this.user!=null){
+                    
+                    // 如果用户已登录，获取购物车信息
+                    if(this.user != null){
 					this.listCart();
 				}
-				}else{
-					console.log("食物查询失败！！！！！！！！！")
+                } else {
+                    console.log("获取商家和食品信息失败");
 				}
-                
-				
-            }).catch(error =>{
+            }).catch(error => {
                 console.error(error);
             });
 
@@ -165,18 +152,17 @@
 				}
 			},
 			listCart(){
-				// 当刷新页面的时候，原有的数据不会保存，所以需要定义一个查询购物车所有食品的信息
-				// 该方法应该在页面初始化的时候被调用，即在created里面调用，
-				// 注意！！！！！！！！！！！不能在created里单独写，会出现刷新有时候有数据有时候没有的情况
-				// ！！！！！！！！！要写在查询后台食物列表成功之后，不会出现该问题
-				this.$axios.post('/cart/listCart',this.$qs.stringify({
-					userId:this.user.userId,businessId:this.businessId
-				})).then(response=>{
-					// 如果查询成功的话，把查到的数据保存在cart数组里,
+				// 使用consumer服务获取购物车数据
+				this.$axios.get('cart', {
+					params: {
+						userId: this.user.userId,
+						businessId: this.businessId
+					}
+				}).then(response => {
 					console.log("购物车响应:", response.data);
 					if(response.data.code === 200) {
 						let cartArray = response.data.data;
-						console.log("购物车数据:", cartArray)
+						console.log("购物车数据:", cartArray);
 						
 						// 先重置所有食品数量为0
 						for(let foodItem of this.foodArray) {
@@ -198,9 +184,9 @@
 						// 刷新列表
 						this.foodArray.sort();
 					}
-				}).catch(error=>{
-					console.log(error)
-				})
+				}).catch(error => {
+					console.log(error);
+				});
 			},
            
             minus(index){
@@ -260,60 +246,61 @@
             
 			// 向购物车表中添加一条记录
 			saveCart(index) {
-				this.$axios.post('/cart/saveCart',this.$qs.stringify({
-					userId:this.user.userId,
-					businessId:this.foodArray[index].businessId,
-					foodId:this.foodArray[index].foodId
-				})).then(response=>{
+				this.$axios.post('cart/add', this.$qs.stringify({
+					userId: this.user.userId,
+					businessId: this.businessId,
+					foodId: this.foodArray[index].foodId
+				})).then(response => {
 					console.log("添加购物车响应:", response.data);
-					// 如果添加成功的话，就将前台的数量设置为1.与后台cart表中数据对应
-					if(response.data.code === 200){  // 修改为200
-						// 由于后端处理了数量更新的逻辑，这里再次请求购物车数据确保显示一致
+					if(response.data.code === 200) {
+						// 更新购物车数据
 						this.listCart();
-					}else{
-						console.log("添加记录失败！！！！")
+					} else {
+						console.log("添加记录失败");
 					}
-				}).catch(error=>{
-					console.log(error)
-				})
+				}).catch(error => {
+					console.log(error);
+				});
 			},
 
 			// 根据用户编号、商家编号、食品编号更新数量
 			updateCart(index) {
-				this.$axios.post('/cart/updateCart',this.$qs.stringify({
-					userId:this.user.userId,
-					businessId:this.foodArray[index].businessId,
-					foodId:this.foodArray[index].foodId,
-					quantity:this.foodArray[index].quantity
-				})).then(response=>{
+				// 使用cart/add端点递增或递减商品数量
+				this.$axios.post('cart/add', this.$qs.stringify({
+					userId: this.user.userId,
+					businessId: this.businessId,
+					foodId: this.foodArray[index].foodId,
+					quantity: this.foodArray[index].quantity
+				})).then(response => {
 					console.log("更新购物车响应:", response.data);
-					// 如果后台数据库中数量更新成功，重新获取购物车数据
-					if(response.data.code === 200){ // 修改为200
+					if(response.data.code === 200) {
 						// 刷新购物车数据以保持前后端一致
 						this.listCart();
-					}else{
-						console.log("更新记录失败！！！！")
+					} else {
+						console.log("更新记录失败");
 					}
-				}).catch(error=>{
-					console.log(error)
-				})
+				}).catch(error => {
+					console.log(error);
+				});
 			},
-			// 据用户编号、商家编号、食品编号删除购物车表中的一条食品记录​ 根据用户编号、商家编号删除购物车表中的多条条记录
+			
+			// 根据用户编号、商家编号、食品编号删除购物车表中的一条食品记录
 			removeCart(index) {
-				this.$axios.post('/cart/removeCart',this.$qs.stringify({
-					userId:this.user.userId,
-					businessId:this.foodArray[index].businessId,
-					foodId:this.foodArray[index].foodId
-				})).then(response=>{
+				// 由于consumer服务没有专门的删除接口，使用cart/add接口传入数量0
+				this.$axios.post('cart/add', this.$qs.stringify({
+					userId: this.user.userId,
+					businessId: this.businessId,
+					foodId: this.foodArray[index].foodId,
+					quantity: 0
+				})).then(response => {
 					console.log("删除购物车响应:", response.data);
-					// 如果删除该条记录成功的话，刷新购物车数据
-					if(response.data.code === 200){ // 修改为200
+					if(response.data.code === 200) {
 						// 刷新购物车数据以保持前后端一致
 						this.listCart();
 					}
-				}).catch(error=>{
-					console.log(error)
-				})
+				}).catch(error => {
+					console.log(error);
+				});
 			}
 			
         },
