@@ -51,21 +51,21 @@ export default {
             console.log("获取到的商家数据:", response.data);
             
             if (response.data.code === 200 && response.data.data) {
-                this.businessArray = response.data.data;
+            this.businessArray = response.data.data;
                 
                 // 打印获取到的商家数量
                 console.log(`获取到 ${this.businessArray.length} 个商家`);
-                
+            
                 // 列出所有获取到的商家
                 if (this.businessArray.length > 0) {
                     console.log("商家列表:");
-                    this.businessArray.forEach((business, index) => {
+                this.businessArray.forEach((business, index) => {
                         console.log(`${index+1}. ID: ${business.businessId}, 名称: ${business.businessName}`);
-                    });
-                    
+                });
+                
                     // 如果用户已登录，获取购物车数量
-                    if (this.user && this.user.userId) {
-                        this.getCartQuantities();
+                if (this.user && this.user.userId) {
+                    this.getCartQuantities();
                     }
                 }
             } else {

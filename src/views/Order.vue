@@ -87,34 +87,34 @@
                     businessId: this.businessId
                 }
             }).then(response => {
-                console.log("购物车响应:", response.data);
+					console.log("购物车响应:", response.data);
                 if(response.data.code === 200) {
                     // 过滤掉数量为0的商品
                     const filteredCartItems = response.data.data.filter(item => item.quantity > 0);
                     this.foodArray = filteredCartItems;
                     console.log("过滤后的购物车数据:", this.foodArray);
-                    
-                    // 重置总金额
-                    this.ordertotal = 0;
-                    
-                    // 只取第一个商品来获取商家信息
-                    if(this.foodArray.length > 0) {
-                        this.businessname = this.foodArray[0].business.businessName;
-                        this.deliveryprice = this.foodArray[0].business.deliveryPrice;
-                    }
-                    
-                    // 重新计算订单总价
+						
+						// 重置总金额
+						this.ordertotal = 0;
+						
+						// 只取第一个商品来获取商家信息
+						if(this.foodArray.length > 0) {
+							this.businessname = this.foodArray[0].business.businessName;
+							this.deliveryprice = this.foodArray[0].business.deliveryPrice;
+						}
+						
+						// 重新计算订单总价
                     for(let i = 0; i < this.foodArray.length; i++){
-                        // 只对有效数量的商品计算价格
-                        this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
-                    }
-                    
-                    console.log("商品总价:", this.ordertotal);
-                    console.log("配送费:", this.deliveryprice);
-                }
+							// 只对有效数量的商品计算价格
+								this.ordertotal += this.foodArray[i].food.foodPrice * this.foodArray[i].quantity;
+						}
+						
+						console.log("商品总价:", this.ordertotal);
+						console.log("配送费:", this.deliveryprice);
+					}
             }).catch(error => {
                 console.log(error);
-            });
+				});
         },
 		 methods: {
 			toUserAddress() {
@@ -181,11 +181,11 @@
 						console.log("创建的订单ID:", this.orderId);
 						
 						// 跳转到支付页面
-						this.$router.push({
-							path:'/payment',
-							query:{
+							this.$router.push({
+								path:'/payment',
+								query:{
 								orderId: this.orderId
-							}
+								}
 						});
 					} else {
 						console.log("创建订单失败");
