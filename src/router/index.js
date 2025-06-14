@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'; // Vue 3 的路由初始化
+import { createRouter, createWebHashHistory } from 'vue-router'; // 改为hash模式
 import Index from '../views/Index.vue';
 import BusinessList from '../views/BusinessList.vue';
 import BusinessInfo from '../views/BusinessInfo.vue';
@@ -10,6 +10,7 @@ import EditUserAddress from '../views/EditUserAddress.vue';
 import AddUserAddress from '../views/AddUserAddress.vue';
 import Payment from '../views/Payment.vue';
 import OrderList from '../views/OrderList.vue';
+import CircuitBreakerFallback from '../components/CircuitBreakerFallback.vue';
 
 // 路由配置数组
 const routes = [
@@ -73,11 +74,16 @@ const routes = [
     name: 'OrderList',
     component: OrderList,
   },
+  {
+    path: '/fallback',
+    name: 'CircuitBreakerFallback',
+    component: CircuitBreakerFallback,
+  },
 ];
 
 // 创建路由实例
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL), // 使用 HTML5 History 模式
+  history: createWebHashHistory(), // 使用hash模式
   routes,
 });
 
